@@ -122,10 +122,7 @@ if (!$current_server_id) {
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                         <span>Friends</span>
                     </a>
-                    <div class="channel-item">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                        <span>Message Requests</span>
-                    </div>
+
 
                     <div class="user-category" style="margin-top: 18px; display: flex; justify-content: space-between; align-items: center; padding-right: 8px;">
                         <span>Direct Messages</span>
@@ -309,9 +306,21 @@ if (!$current_server_id) {
             </div>
 
             <div class="chat-input-area" id="chat-input-row" <?php echo !$current_server_id ? 'style="display:none;"' : ''; ?>>
+                <!-- File preview area -->
+                <div id="file-preview-area" style="display: none; padding: 8px 16px; background: var(--bg-channels); border-radius: 8px; margin: 0 16px 8px; align-items: center; gap: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                    <div id="file-preview-content" style="flex: 1; display: flex; align-items: center; gap: 10px;"></div>
+                    <button type="button" onclick="clearFileAttachment()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 20px; line-height: 1;">×</button>
+                </div>
+
                 <form id="send-message-form">
-                    <div class="input-box">
-                        <input type="text" id="message-input" class="message-input" placeholder="Message #General" autocomplete="off">
+                    <div class="input-box" style="display: flex; align-items: center; gap: 8px; padding: 0 12px;">
+                        <!-- Upload Button -->
+                        <label for="file-upload-input" style="cursor: pointer; color: var(--text-muted); display: flex; align-items: center; flex-shrink: 0;" title="Attach file">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+                        </label>
+                        <input type="file" id="file-upload-input" style="display: none;" accept="image/*,.pdf,.txt,.zip,.doc,.docx,.xls,.xlsx" onchange="handleFileSelect(event)">
+
+                        <input type="text" id="message-input" class="message-input" placeholder="Message #General" autocomplete="off" style="flex: 1; background: none; border: none; outline: none; color: var(--text-normal);">
                     </div>
                 </form>
             </div>

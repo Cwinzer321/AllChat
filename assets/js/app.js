@@ -52,38 +52,128 @@ function renderMessages(messages) {
                     <span class="message-username">${escapeHTML(msg.username)}</span>
                     <span class="message-timestamp">${formatDate(msg.created_at)}</span>
                 </div>
-                <div class="message-body">${escapeHTML(msg.content)}</div>
+                ${msg.content ? `<div class="message-body">${escapeHTML(msg.content)}</div>` : ''}
+                ${msg.attachment_url ? renderAttachment(msg) : ''}
             </div>
         </div>
     `).join('');
+}
+
+function renderAttachment(msg) {
+    const imageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (imageTypes.includes(msg.attachment_type)) {
+        return `
+            <div style="margin-top: 6px;">
+                <a href="${msg.attachment_url}" target="_blank">
+                    <img src="${msg.attachment_url}" alt="${escapeHTML(msg.attachment_name)}" 
+                         style="max-width: 400px; max-height: 300px; border-radius: 8px; cursor: pointer; display: block;" 
+                         onerror="this.style.display='none'">
+                </a>
+            </div>`;
+    }
+    // Generic file
+    const icon = getFileIcon(msg.attachment_type);
+    return `
+        <div style="display: inline-flex; align-items: center; gap: 10px; background: var(--bg-channels); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 10px 14px; margin-top: 6px;">
+            <span style="font-size: 24px;">${icon}</span>
+            <div>
+                <a href="${msg.attachment_url}" download="${escapeHTML(msg.attachment_name)}" style="color: var(--accent); font-size: 14px; font-weight: 600; text-decoration: none;">${escapeHTML(msg.attachment_name)}</a>
+                <div style="font-size: 12px; color: var(--text-muted);">${msg.attachment_type}</div>
+            </div>
+            <a href="${msg.attachment_url}" download="${escapeHTML(msg.attachment_name)}" style="color: var(--text-muted); margin-left: 8px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            </a>
+        </div>`;
+}
+
+function getFileIcon(mimeType) {
+    if (!mimeType) return '📎';
+    if (mimeType.includes('pdf')) return '📄';
+    if (mimeType.includes('zip')) return '🗜️';
+    if (mimeType.includes('word') || mimeType.includes('document')) return '📝';
+    if (mimeType.includes('excel') || mimeType.includes('sheet')) return '📊';
+    if (mimeType.includes('text')) return '📃';
+    return '📎';
+}
+
+// File attachment state
+let selectedFile = null;
+
+// Handle file selection
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+        alert('File too large. Max 10MB.');
+        event.target.value = '';
+        return;
+    }
+    selectedFile = file;
+    const previewArea = document.getElementById('file-preview-area');
+    const previewContent = document.getElementById('file-preview-content');
+    previewArea.style.display = 'flex';
+
+    const imageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (imageTypes.includes(file.type)) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            previewContent.innerHTML = `
+                <img src="${e.target.result}" style="max-height: 80px; max-width: 120px; border-radius: 6px; object-fit: cover;">
+                <span style="color: var(--text-normal); font-size: 13px;">${escapeHTML(file.name)}</span>
+            `;
+        };
+        reader.readAsDataURL(file);
+    } else {
+        previewContent.innerHTML = `
+            <span style="font-size: 24px;">${getFileIcon(file.type)}</span>
+            <span style="color: var(--text-normal); font-size: 13px;">${escapeHTML(file.name)}</span>
+        `;
+    }
+}
+
+function clearFileAttachment() {
+    selectedFile = null;
+    document.getElementById('file-upload-input').value = '';
+    document.getElementById('file-preview-area').style.display = 'none';
+    document.getElementById('file-preview-content').innerHTML = '';
 }
 
 // Send message
 sendMessageForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const content = messageInput.value.trim();
-    if (!content || !currentChannelId) return;
+    if (!content && !selectedFile) return;
+    if (!currentChannelId) return;
 
+    messageInput.value = '';
+
+    // If there's a file, upload it (along with optional text)
+    if (selectedFile) {
+        const formData = new FormData();
+        formData.append('channel_id', currentChannelId);
+        formData.append('content', content);
+        formData.append('file', selectedFile);
+        clearFileAttachment();
+        try {
+            const response = await fetch('api/upload.php', { method: 'POST', body: formData });
+            const data = await response.json();
+            if (data.success) { fetchMessages(); }
+            else { alert('Upload error: ' + data.error); }
+        } catch (error) { console.error('Upload error:', error); }
+        return;
+    }
+
+    // Text-only message
     const formData = new FormData();
     formData.append('channel_id', currentChannelId);
     formData.append('content', content);
 
-    messageInput.value = '';
-
     try {
-        const response = await fetch('api/send_message.php', {
-            method: 'POST',
-            body: formData
-        });
+        const response = await fetch('api/send_message.php', { method: 'POST', body: formData });
         const data = await response.json();
-        if (data.success) {
-            fetchMessages(); // Refresh messages immediately
-        } else {
-            alert('Error sending message: ' + data.error);
-        }
-    } catch (error) {
-        console.error('Error sending message:', error);
-    }
+        if (data.success) { fetchMessages(); }
+        else { alert('Error sending message: ' + data.error); }
+    } catch (error) { console.error('Error sending message:', error); }
 });
 
 // Helper functions

@@ -18,8 +18,13 @@ if (!$channel_id) {
 }
 
 try {
+    // Ensure attachment columns exist
+    try { $pdo->exec("ALTER TABLE messages ADD COLUMN IF NOT EXISTS attachment_url VARCHAR(500) DEFAULT NULL"); } catch(Exception $e) {}
+    try { $pdo->exec("ALTER TABLE messages ADD COLUMN IF NOT EXISTS attachment_name VARCHAR(255) DEFAULT NULL"); } catch(Exception $e) {}
+    try { $pdo->exec("ALTER TABLE messages ADD COLUMN IF NOT EXISTS attachment_type VARCHAR(50) DEFAULT NULL"); } catch(Exception $e) {}
+
     $stmt = $pdo->prepare("
-        SELECT m.*, u.username, u.avatar 
+        SELECT m.id, m.content, m.created_at, m.attachment_url, m.attachment_name, m.attachment_type, u.username, u.avatar 
         FROM messages m 
         JOIN users u ON m.user_id = u.id 
         WHERE m.channel_id = ? 
