@@ -15,10 +15,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $user_id = $_SESSION['user_id'];
-$server_name = trim($_POST['name'] ?? '');
+$group_name = trim($_POST['name'] ?? '');
+$members = isset($_POST['members']) ? json_decode($_POST['members'], true) : [];
 
-if (empty($server_name)) {
-    echo json_encode(['success' => false, 'error' => 'Server name is required']);
+if (empty($group_name)) {
+    echo json_encode(['success' => false, 'error' => 'Group name is required']);
     exit;
 }
 
@@ -32,14 +33,25 @@ try {
 
     $invite_code = generateInviteCode();
     
-    // 1. Create Server
+    // 1. Create Group
     $stmt = $pdo->prepare("INSERT INTO servers (name, invite_code, owner_id) VALUES (?, ?, ?)");
-    $stmt->execute([$server_name, $invite_code, $user_id]);
+    $stmt->execute([$group_name, $invite_code, $user_id]);
     $server_id = $pdo->lastInsertId();
 
     // 2. Add creator as member
     $stmt = $pdo->prepare("INSERT INTO server_members (server_id, user_id) VALUES (?, ?)");
     $stmt->execute([$server_id, $user_id]);
+
+    // 2b. Add other selected members
+    if (!empty($members) && is_array($members)) {
+        $stmt_member = $pdo->prepare("INSERT IGNORE INTO server_members (server_id, user_id) VALUES (?, ?)");
+        foreach ($members as $member_id) {
+            $member_id = (int)$member_id;
+            if ($member_id > 0 && $member_id != $user_id) {
+                $stmt_member->execute([$server_id, $member_id]);
+            }
+        }
+    }
 
     // 3. Create default #general channel
     $stmt = $pdo->prepare("INSERT INTO channels (server_id, name) VALUES (?, 'general')");
@@ -50,7 +62,7 @@ try {
 
     echo json_encode([
         'success' => true, 
-        'server_id' => $server_id, 
+        'group_id' => $server_id, 
         'channel_id' => $channel_id
     ]);
 

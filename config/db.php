@@ -25,7 +25,7 @@ try {
      // AUTO-INITIALIZE TABLES IF MISSING
      $stmt = $pdo->query("SHOW TABLES LIKE 'friends'");
      if ($stmt->rowCount() == 0) {
-         $sqlFile = dirname(__DIR__) . '/database.sql';
+         $sqlFile = dirname(__DIR__) . '/discord_clone.sql';
          if (file_exists($sqlFile)) {
              $sql = file_get_contents($sqlFile);
              $statements = array_filter(array_map('trim', explode(';', $sql)));
@@ -34,6 +34,24 @@ try {
              }
          }
      }
+     
+     // Ensure direct_messages table exists
+     $pdo->exec("CREATE TABLE IF NOT EXISTS `direct_messages` (
+         `id` int NOT NULL AUTO_INCREMENT,
+         `sender_id` int NOT NULL,
+         `receiver_id` int NOT NULL,
+         `content` text NOT NULL,
+         `attachment_url` varchar(500) DEFAULT NULL,
+         `attachment_name` varchar(255) DEFAULT NULL,
+         `attachment_type` varchar(50) DEFAULT NULL,
+         `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+         PRIMARY KEY (`id`),
+         KEY `sender_id` (`sender_id`),
+         KEY `receiver_id` (`receiver_id`),
+         CONSTRAINT `dm_ibfk_1` FOREIGN KEY (`sender_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+         CONSTRAINT `dm_ibfk_2` FOREIGN KEY (`receiver_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+
 } catch (\PDOException $e) {
      throw new \PDOException($e->getMessage(), (int)$e->getCode());
 }

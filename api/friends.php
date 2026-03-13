@@ -75,7 +75,7 @@ try {
         if ($action === 'list') {
             // Get accepted friends
             $stmt = $pdo->prepare("
-                SELECT f.id, u.username, u.status, u.avatar 
+                SELECT f.id, u.id as user_id, u.username, u.status, u.avatar 
                 FROM friends f 
                 JOIN users u ON (f.user_id = u.id OR f.friend_id = u.id)
                 WHERE (f.user_id = ? OR f.friend_id = ?) 
@@ -87,7 +87,7 @@ try {
 
             // Get pending requests (incoming)
             $stmt = $pdo->prepare("
-                SELECT f.id, u.username, u.avatar, 'incoming' as direction
+                SELECT f.id, u.id as user_id, u.username, u.avatar, 'incoming' as direction
                 FROM friends f 
                 JOIN users u ON f.user_id = u.id 
                 WHERE f.friend_id = ? AND f.status = 'pending'
@@ -97,7 +97,7 @@ try {
 
             // Get pending requests (outgoing)
             $stmt = $pdo->prepare("
-                SELECT f.id, u.username, u.avatar, 'outgoing' as direction
+                SELECT f.id, u.id as user_id, u.username, u.avatar, 'outgoing' as direction
                 FROM friends f 
                 JOIN users u ON f.friend_id = u.id
                 WHERE f.user_id = ? AND f.status = 'pending'
@@ -109,7 +109,7 @@ try {
 
             // Get blocked users
             $stmt = $pdo->prepare("
-                SELECT f.id, u.username, u.avatar
+                SELECT f.id, u.id as user_id, u.username, u.avatar
                 FROM friends f
                 JOIN users u ON f.friend_id = u.id
                 WHERE f.user_id = ? AND f.status = 'blocked'

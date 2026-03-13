@@ -3,10 +3,10 @@ const messagesContainer = document.getElementById('messages-list');
 const sendMessageForm = document.getElementById('send-message-form');
 const messageInput = document.getElementById('message-input');
 
-// Get channel_id and server_id from URL
+// Get channel_id and server_id from URL or fallback to injected PHP config
 const urlParams = new URLSearchParams(window.location.search);
-const currentChannelId = urlParams.get('channel_id');
-const currentServerId = urlParams.get('server_id');
+const currentChannelId = urlParams.get('channel_id') || (window.allChatConfig ? window.allChatConfig.currentChannelId : null);
+const currentGroupId = urlParams.get('server_id') || (window.allChatConfig ? window.allChatConfig.currentServerId : null);
 
 let lastMessageCount = 0;
 
@@ -30,13 +30,66 @@ async function fetchMessages() {
     }
 }
 
+// Fetch Group Members
+async function fetchGroupMembers() {
+    if (!currentGroupId) return;
+
+    try {
+        const response = await fetch(`api/get_group_members.php?group_id=${currentGroupId}`);
+        const data = await response.json();
+        if (data.success) {
+            renderGroupMembers(data.members);
+        }
+    } catch (error) {
+        console.error('Error fetching group members:', error);
+    }
+}
+
+function renderGroupMembers(members) {
+    const container = document.getElementById('members-list-container');
+    if (!container) return;
+
+    const online = members.filter(m => m.status === 'online');
+    const offline = members.filter(m => m.status === 'offline' || !m.status);
+
+    let html = '';
+
+    if (online.length > 0) {
+        html += `<div class="members-category">Online — ${online.length}</div>`;
+        html += online.map(m => `
+            <div class="member-item">
+                <div class="user-avatar-small" style="width: 32px; height: 32px; background-image: url('assets/img/${m.avatar || 'default_avatar.png'}'); background-size: cover;">
+                    <div class="status-indicator" style="background-color: #23a55a; border: 2px solid var(--bg-users);"></div>
+                    ${!m.avatar || m.avatar === 'default_avatar.png' ? `<span style="display:flex; justify-content:center; align-items:center; height:100%; color:white; font-size: 12px; font-weight:bold;">${m.username[0].toUpperCase()}</span>` : ''}
+                </div>
+                <div class="message-username" style="color: var(--text-normal); margin-left: 8px;">${escapeHTML(m.username)}</div>
+            </div>
+        `).join('');
+    }
+
+    if (offline.length > 0) {
+        html += `<div class="members-category" style="margin-top: 20px;">Offline — ${offline.length}</div>`;
+        html += offline.map(m => `
+            <div class="member-item" style="opacity: 0.6;">
+                <div class="user-avatar-small" style="width: 32px; height: 32px; background-image: url('assets/img/${m.avatar || 'default_avatar.png'}'); background-size: cover;">
+                    <div class="status-indicator" style="background-color: #949ba4; border: 2px solid var(--bg-users);"></div>
+                    ${!m.avatar || m.avatar === 'default_avatar.png' ? `<span style="display:flex; justify-content:center; align-items:center; height:100%; color:white; font-size: 12px; font-weight:bold;">${m.username[0].toUpperCase()}</span>` : ''}
+                </div>
+                <div class="message-username" style="margin-left: 8px;">${escapeHTML(m.username)}</div>
+            </div>
+        `).join('');
+    }
+
+    container.innerHTML = html;
+}
+
 // Render messages to DOM
 function renderMessages(messages) {
     if (messages.length === 0) {
         messagesContainer.innerHTML = `
             <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-muted);">
-                <h2 style="color: var(--header-primary); margin-bottom: 8px;">Welcome to #General</h2>
-                <p>This is the start of the #General channel.</p>
+                <h2 style="color: var(--header-primary); margin-bottom: 8px;">Welcome to the Chat</h2>
+                <p>This is the start of this group conversation.</p>
             </div>
         `;
         return;
@@ -182,19 +235,19 @@ function scrollToBottom() {
 }
 
 // Modal Toggle Logic
-const joinModal = document.getElementById('join-server-modal');
+const joinModal = document.getElementById('group-actions-modal');
 const modalChoices = document.getElementById('modal-choices');
-const createContainer = document.getElementById('create-server-form-container');
-const joinContainer = document.getElementById('join-server-form-container');
+const createContainer = document.getElementById('create-group-form-container');
+const joinContainer = document.getElementById('join-group-form-container');
 
-const addServerBtn = document.getElementById('add-server-btn');
+const addGroupBtn = document.getElementById('add-group-btn');
 const joinServerForm = document.getElementById('join-server-form');
 const createServerForm = document.getElementById('create-server-form');
 const inviteInput = document.getElementById('join-invite-code');
-const serverNameInput = document.getElementById('create-server-name');
+const groupNameInput = document.getElementById('create-group-name');
 
-if (addServerBtn) {
-    addServerBtn.addEventListener('click', () => {
+if (addGroupBtn) {
+    addGroupBtn.addEventListener('click', () => {
         joinModal.style.display = 'flex';
         backToChoices();
     });
@@ -207,7 +260,7 @@ function closeServerModal() {
 function showCreateForm() {
     modalChoices.style.display = 'none';
     createContainer.style.display = 'block';
-    serverNameInput.focus();
+    groupNameInput.focus();
 }
 
 function showJoinForm() {
@@ -245,25 +298,25 @@ if (joinServerForm) {
             });
             const data = await response.json();
             if (data.success) {
-                window.location.href = `index.php?server_id=${data.server_id}`;
+                window.location.href = `index.php?server_id=${data.group_id}`;
             } else {
                 alert(data.error);
             }
         } catch (error) {
-            console.error('Error joining server:', error);
+            console.error('Error joining group:', error);
         }
     });
 }
 
-// Create Server Logic
+// Create Group Logic
 if (createServerForm) {
     createServerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const serverName = serverNameInput.value.trim();
-        if (!serverName) return;
+        const groupName = groupNameInput.value.trim();
+        if (!groupName) return;
 
         const formData = new FormData();
-        formData.append('name', serverName);
+        formData.append('name', groupName);
 
         try {
             const response = await fetch('api/create_server.php', {
@@ -272,12 +325,12 @@ if (createServerForm) {
             });
             const data = await response.json();
             if (data.success) {
-                window.location.href = `index.php?server_id=${data.server_id}&channel_id=${data.channel_id}`;
+                window.location.href = `index.php?server_id=${data.group_id}&channel_id=${data.channel_id}`;
             } else {
                 alert(data.error);
             }
         } catch (error) {
-            console.error('Error creating server:', error);
+            console.error('Error creating group:', error);
         }
     });
 }
@@ -288,19 +341,221 @@ function escapeHTML(str) {
     return div.innerHTML;
 }
 
+async function confirmDeleteGroup(groupId) {
+    if (!confirm('Are you sure you want to delete this group? This action cannot be undone.')) {
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('group_id', groupId);
+
+    try {
+        const response = await fetch('api/delete_group.php', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await response.json();
+        if (data.success) {
+            window.location.href = 'index.php'; // Redirect to home
+        } else {
+            alert(data.error);
+        }
+    } catch (error) {
+        console.error('Error deleting group:', error);
+        alert('An error occurred while deleting the group.');
+    }
+}
+
 function formatDate(dateStr) {
     const date = new Date(dateStr);
     return date.toLocaleString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+}
+// View state
+let currentHomeView = 'friends';
+
+function switchHomeView(view) {
+    currentHomeView = view;
+
+    const friendsArea = document.getElementById('friends-area');
+    const msgRequestsArea = document.getElementById('message-requests-area');
+    const navFriends = document.getElementById('nav-friends');
+    const navMsgRequests = document.getElementById('nav-message-requests');
+    const headerTabs = document.querySelector('.home-header-tabs');
+
+    if (!friendsArea || !msgRequestsArea) return;
+
+    if (view === 'friends') {
+        friendsArea.style.display = 'block';
+        msgRequestsArea.style.display = 'none';
+        if (headerTabs) headerTabs.style.display = 'flex';
+
+        navFriends.classList.add('active');
+        navMsgRequests.classList.remove('active');
+    } else if (view === 'message-requests') {
+        friendsArea.style.display = 'none';
+        msgRequestsArea.style.display = 'block';
+        if (headerTabs) headerTabs.style.display = 'none';
+
+        navFriends.classList.remove('active');
+        navMsgRequests.classList.add('active');
+    }
+}
+
+// DM State
+let currentDmUserId = null;
+let lastDmMessageCount = 0;
+let dmPollInterval = null;
+
+// Open DM view
+function openDM(friendId, friendUsername, friendAvatar) {
+    currentDmUserId = friendId;
+    currentHomeView = 'dm';
+
+    // Update Header
+    const avatarEl = document.getElementById('dm-header-avatar');
+    if (friendAvatar && friendAvatar !== 'default_avatar.png') {
+        avatarEl.style.backgroundImage = `url('assets/img/${friendAvatar}')`;
+        avatarEl.innerHTML = '';
+    } else {
+        avatarEl.style.backgroundImage = 'none';
+        avatarEl.innerHTML = `<span style="display:flex; justify-content:center; align-items:center; height:100%; color:white; font-size:12px; font-weight:bold;">${friendUsername[0].toUpperCase()}</span>`;
+    }
+    document.getElementById('dm-header-username').textContent = friendUsername;
+
+    // Toggle Views
+    const friendsArea = document.getElementById('friends-area');
+    const msgRequestsArea = document.getElementById('message-requests-area');
+    const dmArea = document.getElementById('dm-chat-area');
+    const headerTabs = document.querySelector('.home-header-tabs');
+
+    if (friendsArea) friendsArea.style.display = 'none';
+    if (msgRequestsArea) msgRequestsArea.style.display = 'none';
+    if (dmArea) dmArea.style.display = 'flex';
+    if (headerTabs) headerTabs.style.display = 'none';
+
+    // Un-highlight nav
+    document.getElementById('nav-friends')?.classList.remove('active');
+    document.getElementById('nav-message-requests')?.classList.remove('active');
+
+    // Fetch messages immediately
+    lastDmMessageCount = 0;
+    document.getElementById('dm-messages-list').innerHTML = '';
+    fetchDMs();
+
+    // Start DM polling
+    if (dmPollInterval) clearInterval(dmPollInterval);
+    dmPollInterval = setInterval(fetchDMs, 2000);
+}
+
+// Ensure DM view hides when clicking back to Friends
+const originalSwitchHomeView = switchHomeView;
+switchHomeView = function (view) {
+    if (dmPollInterval) {
+        clearInterval(dmPollInterval);
+        dmPollInterval = null;
+    }
+    currentDmUserId = null;
+    const dmArea = document.getElementById('dm-chat-area');
+    if (dmArea) dmArea.style.display = 'none';
+
+    // call original
+    originalSwitchHomeView(view);
 }
 
 // Initial fetch and polling
 if (currentChannelId) {
     fetchMessages();
     setInterval(fetchMessages, 2000); // Poll every 2 seconds
-} else if (!currentServerId) {
+    if (currentGroupId) {
+        fetchGroupMembers();
+        setInterval(fetchGroupMembers, 10000); // Poll group members every 10 seconds
+    }
+} else if (!currentGroupId) {
     fetchFriends();
     setInterval(fetchFriends, 5000); // Poll friends every 5 seconds
 }
+
+// Always poll for friend request notifications (regardless of page)
+setInterval(checkFriendRequestNotifications, 10000); // every 10s
+
+// Notification: check for new friend requests
+async function checkFriendRequestNotifications() {
+    try {
+        const response = await fetch('api/notifications.php');
+        const data = await response.json();
+        if (data.success && data.new_requests.length > 0) {
+            data.new_requests.forEach(req => showFriendRequestToast(req));
+            // If on friends page, refresh the list too
+            if (!currentGroupId) fetchFriends();
+        }
+    } catch (e) { }
+}
+
+function showFriendRequestToast(req) {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const initial = req.username ? req.username[0].toUpperCase() : '?';
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        pointer-events: all;
+        background: #2b2d31;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-left: 4px solid #5865f2;
+        border-radius: 8px;
+        padding: 14px 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 300px;
+        max-width: 360px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        animation: slideInToast 0.4s ease;
+        cursor: pointer;
+    `;
+    toast.innerHTML = `
+        <div style="width:36px; height:36px; border-radius:50%; background:#5865f2; display:flex; align-items:center; justify-content:center; font-weight:bold; color:white; flex-shrink:0;">${initial}</div>
+        <div style="flex:1;">
+            <div style="font-weight:700; color:#fff; font-size:13px;">Friend Request Received!</div>
+            <div style="color:#949ba4; font-size:12px; margin-top:2px;"><b style="color:#dbdee1;">${escapeHTML(req.username)}</b> sent you a friend request.</div>
+        </div>
+        <div onclick="this.parentElement.remove()" style="color:#949ba4; font-size:20px; line-height:1; padding:4px; cursor:pointer;">×</div>
+    `;
+
+    // Click to switch to pending tab
+    toast.addEventListener('click', (e) => {
+        if (e.target.tagName !== 'DIV' || e.target.textContent !== '×') {
+            if (!currentServerId && typeof switchTab === 'function') {
+                switchTab('pending');
+            } else {
+                window.location.href = 'index.php';
+            }
+            toast.remove();
+        }
+    });
+
+    container.appendChild(toast);
+
+    // Auto dismiss after 6 seconds
+    setTimeout(() => {
+        toast.style.animation = 'fadeOutToast 0.4s ease forwards';
+        setTimeout(() => toast.remove(), 400);
+    }, 6000);
+}
+
+// Inject toast animations
+const toastStyle = document.createElement('style');
+toastStyle.textContent = `
+    @keyframes slideInToast {
+        from { transform: translateX(120%); opacity: 0; }
+        to   { transform: translateX(0);    opacity: 1; }
+    }
+    @keyframes fadeOutToast {
+        from { transform: translateX(0);    opacity: 1; }
+        to   { transform: translateX(120%); opacity: 0; }
+    }
+`;
+document.head.appendChild(toastStyle);
 
 // Tab state
 let currentTab = 'online';
@@ -308,7 +563,7 @@ let cachedFriendsData = { friends: [], pending: [], blocked: [] };
 
 // Friends System Logic
 async function fetchFriends() {
-    if (currentServerId) return;
+    if (currentGroupId) return;
 
     try {
         const response = await fetch('api/friends.php?action=list');
@@ -349,7 +604,7 @@ function renderFriends(friends, pending, blocked = []) {
     // Render Sidebar DM List (always shows accepted friends)
     if (dmList) {
         dmList.innerHTML = friends.length ? friends.map(f => `
-            <a href="#" class="channel-item">
+            <a href="#" class="channel-item" onclick="openDM(${f.user_id}, '${escapeHTML(f.username.replace(/'/g, "\\'"))}', '${f.avatar || 'default_avatar.png'}')">
                 <div class="user-avatar-small" style="width: 32px; height: 32px; background-image: url('assets/img/${f.avatar || 'default_avatar.png'}'); background-size: cover;">
                     <div class="status-indicator" style="background-color: ${f.status === 'online' ? '#23a55a' : '#949ba4'}"></div>
                     ${!f.avatar || f.avatar === 'default_avatar.png' ? `<span style="display:flex; justify-content:center; align-items:center; height:100%; color:white; font-size: 12px; font-weight:bold;">${f.username[0].toUpperCase()}</span>` : ''}
@@ -359,7 +614,15 @@ function renderFriends(friends, pending, blocked = []) {
         `).join('') : '<div style="padding: 8px 16px; color: var(--text-muted); font-size: 12px;">No friends yet.</div>';
     }
 
-    // Render Main Friends List (filtered by active tab)
+// Search Functionality
+const mainSearchInput = document.querySelector('.home-search-container input');
+if (mainSearchInput) {
+    mainSearchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        const friends = cachedFriendsData.friends.filter(f => f.username.toLowerCase().includes(query));
+        renderFriends(friends, cachedFriendsData.pending, cachedFriendsData.blocked);
+    });
+}
     if (friendsList) {
         let displayList = [];
         let emptyMessage = '';
@@ -423,7 +686,7 @@ function renderFriends(friends, pending, blocked = []) {
                     </div>
                 </div>
                 <div class="friend-actions">
-                    <div class="action-btn" title="Message"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></div>
+                    <div class="action-btn" title="Message" onclick="openDM(${f.user_id}, '${escapeHTML(f.username.replace(/'/g, "\\'"))}', '${f.avatar || 'default_avatar.png'}')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></div>
                     <div class="action-btn" title="More"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg></div>
                 </div>
             </div>
@@ -542,5 +805,285 @@ if (addFriendForm) {
             console.error('Error sending friend request:', error);
         }
     });
+}
+
+// Mobile Sidebar Logic
+const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+const mobileUsersBtn = document.getElementById('mobile-users-btn');
+const sidebarOverlay = document.getElementById('sidebar-overlay');
+const serverSidebar = document.querySelector('.sidebar-servers');
+const channelSidebar = document.querySelector('.sidebar-channels');
+const userSidebar = document.querySelector('.sidebar-users');
+
+if (mobileMenuBtn) {
+    mobileMenuBtn.addEventListener('click', () => {
+        serverSidebar.classList.add('active');
+        channelSidebar.classList.add('active');
+        sidebarOverlay.classList.add('active');
+    });
+}
+
+if (mobileUsersBtn) {
+    mobileUsersBtn.addEventListener('click', () => {
+        if (userSidebar) userSidebar.classList.toggle('active');
+        const sidebarMembers = document.querySelector('.sidebar-members');
+        if (sidebarMembers) sidebarMembers.classList.toggle('active');
+        sidebarOverlay.classList.add('active');
+    });
+}
+
+if (sidebarOverlay) {
+    sidebarOverlay.addEventListener('click', () => {
+        serverSidebar.classList.remove('active');
+        channelSidebar.classList.remove('active');
+        if (userSidebar) userSidebar.classList.remove('active');
+        const sidebarMembers = document.querySelector('.sidebar-members');
+        if (sidebarMembers) sidebarMembers.classList.remove('active');
+        sidebarOverlay.classList.remove('active');
+    });
+}
+
+// Search Button interaction
+window.addEventListener('load', () => {
+    const searchBtn = document.querySelector('.home-search-btn');
+    if (searchBtn && !searchBtn.tagName === 'INPUT') { // If it's the button one
+        searchBtn.onclick = () => {
+             const input = document.querySelector('.home-search-container input');
+             if (input) input.focus();
+        };
+    }
+});
+
+// Group DM Modal Logic
+const groupDMModal = document.getElementById('group-dm-modal');
+const openGroupDMBtn = document.getElementById('open-group-dm-btn');
+const closeGroupDMBtn = document.getElementById('close-group-dm-modal');
+const createGroupDMForm = document.getElementById('create-group-dm-form');
+const friendsSelectionList = document.getElementById('friends-selection-list');
+
+window.showGroupDMModal = function () {
+    if (typeof populateFriendsSelection === 'function') {
+        populateFriendsSelection();
+    }
+    if (groupDMModal) {
+        groupDMModal.style.display = 'flex';
+        groupDMModal.style.zIndex = '10000'; // Ensure it's on top
+    }
+};
+
+if (openGroupDMBtn) {
+    // Keep internal listener as backup
+    openGroupDMBtn.addEventListener('click', showGroupDMModal);
+}
+
+if (closeGroupDMBtn) {
+    closeGroupDMBtn.addEventListener('click', () => {
+        groupDMModal.style.display = 'none';
+    });
+}
+
+function populateFriendsSelection() {
+    if (!friendsSelectionList) return;
+
+    if (cachedFriendsData.friends.length === 0) {
+        friendsSelectionList.innerHTML = '<div style="padding: 10px; color: var(--text-muted); font-size: 13px;">No friends found to add.</div>';
+        return;
+    }
+
+    friendsSelectionList.innerHTML = cachedFriendsData.friends.map(f => `
+        <label style="display: flex; align-items: center; gap: 10px; padding: 8px; cursor: pointer; border-radius: 4px; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+            <input type="checkbox" name="group-members" value="${f.user_id}" style="width: 18px; height: 18px; cursor: pointer;">
+            <div class="user-avatar-small" style="width: 24px; height: 24px; background-image: url('assets/img/${f.avatar || 'default_avatar.png'}'); background-size: cover;">
+                ${!f.avatar || f.avatar === 'default_avatar.png' ? `<span style="display:flex; justify-content:center; align-items:center; height:100%; color:white; font-size: 10px; font-weight:bold;">${f.username[0].toUpperCase()}</span>` : ''}
+            </div>
+            <span style="color: var(--text-normal); font-size: 14px;">${escapeHTML(f.username)}</span>
+        </label>
+    `).join('');
+}
+
+if (createGroupDMForm) {
+    createGroupDMForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const groupName = document.getElementById('group-dm-name').value.trim();
+        const selectedMembers = Array.from(document.querySelectorAll('input[name="group-members"]:checked')).map(cb => cb.value);
+
+        if (!groupName) return;
+        if (selectedMembers.length === 0) {
+            alert('Please select at least one friend to add to the group.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('name', groupName);
+        formData.append('members', JSON.stringify(selectedMembers));
+
+        try {
+            const response = await fetch('api/create_server.php', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            if (data.success) {
+                groupDMModal.style.display = 'none';
+                document.getElementById('group-dm-name').value = '';
+                // Redirect to the new group chat
+                window.location.href = `index.php?server_id=${data.group_id}&channel_id=${data.channel_id}`;
+            } else {
+                alert(data.error);
+            }
+        } catch (error) {
+            console.error('Error creating group chat:', error);
+            alert('An error occurred while creating the group.');
+        }
+    });
+}
+
+/* --- DIRECT MESSAGES LOGIC --- */
+
+// Fetch DMs
+async function fetchDMs() {
+    if (!currentDmUserId) return;
+    try {
+        const response = await fetch(`api/get_dms.php?friend_id=${currentDmUserId}`);
+        const data = await response.json();
+        if (data.success) {
+            if (data.messages.length !== lastDmMessageCount) {
+                renderDMMessages(data.messages);
+                lastDmMessageCount = data.messages.length;
+                const dmContainer = document.getElementById('dm-messages-list');
+                dmContainer.scrollTop = dmContainer.scrollHeight;
+            }
+        }
+    } catch (e) { console.error('Error fetching DMs:', e); }
+}
+
+// Render DMs
+function renderDMMessages(messages) {
+    const dmContainer = document.getElementById('dm-messages-list');
+    if (messages.length === 0) {
+        dmContainer.innerHTML = `
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-muted); padding-bottom: 20px;">
+                <h2 style="color: var(--header-primary); margin-bottom: 8px;">No messages yet</h2>
+                <p>Send a message or wave to start the conversation!</p>
+            </div>
+        `;
+        return;
+    }
+
+    dmContainer.innerHTML = messages.map(msg => `
+        <div class="message-item">
+            <div class="message-avatar" style="background-image: url('assets/img/${msg.avatar || 'default_avatar.png'}'); background-size: cover;">
+                ${!msg.avatar || msg.avatar === 'default_avatar.png' ? `<span style="display:flex; justify-content:center; align-items:center; height:100%; color:white; font-weight:bold;">${msg.username[0].toUpperCase()}</span>` : ''}
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-user-info">
+                    <span class="message-username">${escapeHTML(msg.username)}</span>
+                    <span class="message-timestamp">${formatDate(msg.created_at)}</span>
+                </div>
+                ${msg.content ? `<div class="message-body">${escapeHTML(msg.content)}</div>` : ''}
+                ${msg.attachment_url ? renderAttachment(msg) : ''}
+            </div>
+        </div>
+    `).join('');
+}
+
+// DM Attachment Logic
+let selectedDMFile = null;
+
+function handleDMFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+        alert('File too large. Max 10MB.');
+        event.target.value = '';
+        return;
+    }
+    selectedDMFile = file;
+    const previewArea = document.getElementById('dm-file-preview-area');
+    const previewContent = document.getElementById('dm-file-preview-content');
+    previewArea.style.display = 'flex';
+
+    const imageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (imageTypes.includes(file.type)) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            previewContent.innerHTML = `
+                <img src="${e.target.result}" style="max-height: 80px; max-width: 120px; border-radius: 6px; object-fit: cover;">
+                <span style="color: var(--text-normal); font-size: 13px;">${escapeHTML(file.name)}</span>
+            `;
+        };
+        reader.readAsDataURL(file);
+    } else {
+        previewContent.innerHTML = `
+            <span style="font-size: 24px;">${getFileIcon(file.type)}</span>
+            <span style="color: var(--text-normal); font-size: 13px;">${escapeHTML(file.name)}</span>
+        `;
+    }
+}
+
+function clearDMFileAttachment() {
+    selectedDMFile = null;
+    document.getElementById('dm-file-upload-input').value = '';
+    document.getElementById('dm-file-preview-area').style.display = 'none';
+    document.getElementById('dm-file-preview-content').innerHTML = '';
+}
+
+// Send DM
+const dmSendMessageForm = document.getElementById('dm-send-message-form');
+if (dmSendMessageForm) {
+    console.log("DM Form found and listener attached");
+    dmSendMessageForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        console.log("DM form submitted");
+        const dmMessageInput = document.getElementById('dm-message-input');
+        const content = dmMessageInput.value.trim();
+
+        console.log("DM Content:", content);
+        console.log("currentDmUserId:", currentDmUserId);
+
+        if (!content && !selectedDMFile) {
+            console.log("Empty content and no file, aborting");
+            return;
+        }
+        if (!currentDmUserId) {
+            console.log("No currentDmUserId, aborting");
+            alert("Error: No friend selected to DM!");
+            return;
+        }
+
+        dmMessageInput.value = '';
+
+        if (selectedDMFile) {
+            const formData = new FormData();
+            formData.append('friend_id', currentDmUserId);
+            formData.append('content', content);
+            formData.append('file', selectedDMFile);
+            clearDMFileAttachment();
+            try {
+                const response = await fetch('api/upload_dm.php', { method: 'POST', body: formData });
+                const data = await response.json();
+                console.log("Upload DM API response:", data);
+                if (data.success) { fetchDMs(); }
+                else { alert('Upload error: ' + data.error); }
+            } catch (error) { console.error('Upload error:', error); }
+            return;
+        }
+
+        // Text-only DM
+        const formData = new FormData();
+        formData.append('friend_id', currentDmUserId);
+        formData.append('content', content);
+
+        try {
+            console.log("Sending text DM to API...");
+            const response = await fetch('api/send_dm.php', { method: 'POST', body: formData });
+            const data = await response.json();
+            console.log("Send DM API response:", data);
+            if (data.success) { fetchDMs(); }
+            else { alert('Error sending message: ' + data.error); }
+        } catch (error) { console.error('Error sending message:', error); }
+    });
+} else {
+    console.error("CRITICAL: dm-send-message-form NOT FOUND in DOM during app.js execution!");
 }
 

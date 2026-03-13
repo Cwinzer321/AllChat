@@ -25,12 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['user_id'] = $new_user_id;
                 $_SESSION['username'] = $username;
 
-                // For demo: Auto-join the first available server
-                $server = $pdo->query("SELECT id FROM servers LIMIT 1")->fetch();
-                if ($server) {
-                    $stmt = $pdo->prepare("INSERT IGNORE INTO server_members (server_id, user_id) VALUES (?, ?)");
-                    $stmt->execute([$server['id'], $new_user_id]);
-                }
+                // User registered successfully without joining any servers
 
                 header('Location: ../index.php');
                 exit;
