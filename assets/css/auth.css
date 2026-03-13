@@ -1,15 +1,14 @@
 :root {
-    --bg-dark: #313338;
-    --bg-darker: #2b2d31;
-    --bg-sidebar: #1e1f22;
-    --accent: #5865f2;
-    --accent-hover: #4752c4;
-    --text-main: #dbdee1;
-    --text-muted: #949ba4;
-    --input-bg: #1e1f22;
+    /* Modern Tech Palette */
+    --accent: #0ea5e9;
+    --accent-glow: rgba(14, 165, 233, 0.4);
+    --accent-gradient: linear-gradient(135deg, #38bdf8 0%, #2563eb 100%);
+    --bg-dark: #0f172a;
+    --bg-darker: #1e293b;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --input-bg: #0f172a;
     --white: #ffffff;
-    --glass-bg: rgba(255, 255, 255, 0.05);
-    --glass-border: rgba(255, 255, 255, 0.1);
 }
 
 * {
@@ -27,6 +26,71 @@ body {
     align-items: center;
     height: 100vh;
     overflow: hidden;
+}
+
+/* Brand Styling - Modern Tech Redesign */
+.brand-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 32px;
+}
+
+.brand-logo-icon {
+    width: 64px;
+    height: 64px;
+    background: var(--accent-gradient);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    box-shadow: 0 0 30px var(--accent-glow);
+    position: relative;
+    overflow: hidden;
+}
+
+.brand-logo-icon::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.2), transparent);
+    transform: rotate(45deg);
+    animation: shine 3s infinite;
+}
+
+@keyframes shine {
+    0% { transform: translate(-100%, -100%) rotate(45deg); }
+    100% { transform: translate(100%, 100%) rotate(45deg); }
+}
+
+.brand-text-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.brand-text {
+    font-size: 28px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--white);
+    line-height: 1;
+}
+
+.brand-tagline {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    margin-top: 8px;
+    opacity: 0.8;
 }
 
 .auth-container {

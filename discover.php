@@ -104,7 +104,7 @@ $public_servers = $stmt->fetchAll();
         <div class="server-grid">
             <?php foreach ($public_servers as $server): ?>
                 <div class="discover-card" onclick="joinServer('<?php echo $server['invite_code']; ?>')">
-                    <div class="card-banner" style="background: <?php echo $server['banner_color'] ?: 'var(--accent-gradient)'; ?>">
+                    <div class="card-banner" style="background: <?php echo isset($server['banner_color']) ? $server['banner_color'] : 'var(--accent-gradient)'; ?>">
                         <div class="card-icon" style="background-image: url('assets/img/<?php echo $server['icon']; ?>'); background-size: cover;"></div>
                     </div>
                     <div class="card-body">

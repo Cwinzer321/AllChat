@@ -76,31 +76,18 @@ if (!$current_server_id) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AllChat</title>
-    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/main.css?v=<?php echo time(); ?>">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://kit.fontawesome.com/your-code.js" crossorigin="anonymous"></script> <!-- Placeholder for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="mobile-header">
-        <button class="menu-toggle" id="mobile-menu-btn">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-        </button>
-        <span style="font-weight: 800; color: var(--accent);">AllChat</span>
-        <button class="menu-toggle" id="mobile-users-btn">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-        </button>
-    </div>
-
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
     <div class="app-container">
         <!-- Sidebar Servers -->
         <div class="sidebar-servers">
             <a href="index.php" class="server-icon <?php echo !$current_server_id ? 'active' : ''; ?>" title="Home">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                </svg>
+                <i class="fa-solid fa-house"></i>
             </a>
             <div class="separator"></div>
             
@@ -111,19 +98,55 @@ if (!$current_server_id) {
             <?php endforeach; ?>
 
             <div class="server-icon" id="add-group-btn" title="Create Group" style="background-color: var(--bg-chat); color: #23a55a;">
-                <span style="font-size: 24px;">+</span>
+                <i class="fa-solid fa-plus" style="font-size: 20px;"></i>
             </div>
 
             <a href="discover.php" class="server-icon" title="Discover" style="background-color: var(--bg-chat); color: #23a55a;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                <i class="fa-solid fa-compass"></i>
             </a>
         </div>
 
         <!-- Sidebar Channels -->
         <div class="sidebar-channels">
-            <div class="channel-header">
+            <!-- <div class="brand-header">
+                <div class="brand-wrapper">
+                    <div class="brand-logo-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                    </div>
+                    <div class="brand-text-container">
+                        <span class="brand-text">AllChat</span>
+                        <span class="brand-tagline">Nexus Protocol</span>
+                    </div>
+                </div>
+            </div> -->
+
+            <div class="sidebar-channels-header" id="group-switcher-header">
                 <span><?php echo htmlspecialchars($current_server_name); ?></span>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+                
+                <div class="group-switcher-dropdown" id="group-switcher-dropdown">
+                    <a href="index.php" class="switcher-item <?php echo !$current_server_id ? 'active' : ''; ?>">
+                        <div class="switcher-icon">
+                            <i class="fa-solid fa-house" style="font-size: 12px;"></i>
+                        </div>
+                        <span>Home Dashboard</span>
+                    </a>
+                    
+                    <div class="switcher-separator"></div>
+
+                    <a href="#" class="switcher-item" id="switcher-add-group" style="color: var(--accent-positive);">
+                        <div class="switcher-icon" style="background: rgba(16, 185, 129, 0.1);">
+                            <i class="fa-solid fa-plus" style="font-size: 12px;"></i>
+                        </div>
+                        <span>Create a Group</span>
+                    </a>
+                    <a href="discover.php" class="switcher-item">
+                        <div class="switcher-icon">
+                            <i class="fa-solid fa-compass" style="font-size: 12px;"></i>
+                        </div>
+                        <span>Discover Groups</span>
+                    </a>
+                </div>
             </div>
             
             <div class="channel-list">
@@ -137,10 +160,6 @@ if (!$current_server_id) {
                         <p style="line-height: 1.4;">You are currently in <strong><?php echo htmlspecialchars($current_server_name); ?></strong>. All messages sent here are seen by group members.</p>
                     </div>
                 <?php else: ?>
-                    <div class="home-search-container">
-                        <button class="home-search-btn" onclick="alert('Search feature coming soon!')">Find or start a conversation</button>
-                    </div>
-                    
                     <a href="#" class="channel-item active" id="nav-friends" onclick="switchHomeView('friends')">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                         <span>Friends</span>
@@ -175,7 +194,8 @@ if (!$current_server_id) {
             <!-- User Footer -->
             <div class="user-footer">
                 <div class="footer-profile">
-                    <div class="user-avatar-small">
+                    <div class="user-avatar-small" style="background-image: url('assets/img/default_avatar.png'); background-size: cover; display: flex; align-items: center; justify-content: center;">
+                        <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.8; padding: 20%;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                         <div class="status-indicator"></div>
                     </div>
                     <div class="footer-info">
@@ -197,16 +217,15 @@ if (!$current_server_id) {
         <!-- Chat Area -->
         <div class="chat-main">
             <div class="chat-inner-card">
-                <div class="chat-header" id="chat-header-area" style="justify-content: space-between;">
-                    <div style="display: flex; align-items: center;" id="header-left">
+                <div class="chat-header" id="chat-header-area">
+                    <div class="header-left" id="header-left">
                         <?php if ($current_channel_id): ?>
-                            <span style="color: var(--text-muted); margin-right: 8px;"></span>
-                            <span><?php echo htmlspecialchars($current_server_name); ?></span>
-    <?php elseif (!$current_server_id): ?>
+                            <span class="header-name"><?php echo htmlspecialchars($current_server_name); ?></span>
+                        <?php elseif (!$current_server_id): ?>
                             <div class="home-header-tabs">
-                                <div style="display: flex; align-items: center; gap: 8px; padding-right: 8px; border-right: 1px solid rgba(0,0,0,0.1); margin-right: 8px;">
-                                    <svg style="color: var(--text-muted);" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                                    <span style="font-weight: bold; color: var(--header-primary);">Friends</span>
+                                <div class="home-icon-group">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                                    <span class="header-title">Friends</span>
                                 </div>
                                 <div class="tab-item active" data-tab="online" onclick="switchTab('online')">Online</div>
                                 <div class="tab-item" data-tab="all" onclick="switchTab('all')">All</div>
@@ -233,25 +252,22 @@ if (!$current_server_id) {
                                 </div>
                             <?php endif; ?>
                         <?php elseif (!$current_server_id): ?>
-                            <div style="display: flex; gap: 16px; color: var(--text-muted);">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-                            </div>
+                            <!-- Redundant icons removed as per user request -->
                         <?php endif; ?>
                     </div>
                 </div>
 
-                <div class="messages-container" id="messages-list" style="<?php echo !$current_server_id ? 'padding: 0; flex-direction: row;' : ''; ?>">
+                <div class="messages-container" id="messages-list" style="<?php echo !$current_server_id ? 'flex-direction: row;' : 'padding: 24px;'; ?>">
                     <?php if (!$current_server_id): ?>
-                        <div id="friends-area" style="flex: 1; padding: 24px;">
-                            <div class="home-search-container" style="padding: 0 0 24px 0; height: auto; box-shadow: none;">
-                                <input type="text" class="home-search-btn" style="background-color: var(--background-secondary); width: 100%; border-radius: var(--radius-lg); padding: 12px 20px;" placeholder="Search for friends...">
+                        <div id="friends-area" style="flex: 1; display: flex; flex-direction: column;">
+                            <div class="home-search-container">
+                                <input type="text" class="home-search-btn" style="width: 100%; padding: 10px 16px; border-radius: 8px;" placeholder="Search for friends...">
                             </div>
-                            <?php $online_friends = array_filter($friends, function($f) { return $f['status'] === 'online'; }); ?>
-                            <div class="user-category" style="margin-top: 8px;">Online — <?php echo count($online_friends); ?></div>
-                            <div id="friends-list-content">
+                            <div id="friends-list-content" style="flex: 1; padding: 16px; overflow-y: auto;">
+                                <?php $online_friends = array_filter($friends, function($f) { return $f['status'] === 'online'; }); ?>
+                                <div class="user-category">Online — <?php echo count($online_friends); ?></div>
                                 <?php foreach ($friends as $friend): ?>
-                                    <div class="friend-item" style="border-top: 1px solid var(--background-accent);">
+                                    <div class="friend-item">
                                         <div class="friend-info">
                                             <div class="user-avatar-small" style="background-image: url('assets/img/<?php echo $friend['avatar'] ?: 'default_avatar.png'; ?>'); background-size: cover; border-radius: 12px;">
                                                 <div class="status-indicator" style="background-color: <?php echo $friend['status'] === 'online' ? 'var(--accent-positive)' : 'var(--text-muted)'; ?>; border-color: var(--background-primary);"></div>
@@ -412,7 +428,8 @@ if (!$current_server_id) {
             <?php if (!$current_server_id): ?>
                 <div class="user-category">Online — 1</div>
                 <div class="user-item">
-                    <div class="user-avatar-small">
+                    <div class="user-avatar" style="background-image: url('assets/img/default_avatar.png'); background-size: cover; border-radius: 12px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.8;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                         <div class="status-indicator"></div>
                     </div>
                     <div class="user-name"><?php echo htmlspecialchars($username); ?></div>

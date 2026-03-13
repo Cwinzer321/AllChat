@@ -60,7 +60,7 @@ function renderGroupMembers(members) {
             <div class="member-item">
                 <div class="user-avatar-small" style="width: 32px; height: 32px; background-image: url('assets/img/${m.avatar || 'default_avatar.png'}'); background-size: cover;">
                     <div class="status-indicator" style="background-color: #23a55a; border: 2px solid var(--bg-users);"></div>
-                    ${!m.avatar || m.avatar === 'default_avatar.png' ? `<span style="display:flex; justify-content:center; align-items:center; height:100%; color:white; font-size: 12px; font-weight:bold;">${m.username[0].toUpperCase()}</span>` : ''}
+                    ${!m.avatar || m.avatar === 'default_avatar.png' ? `<svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.8; padding: 20%;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>` : ''}
                 </div>
                 <div class="message-username" style="color: var(--text-normal); margin-left: 8px;">${escapeHTML(m.username)}</div>
             </div>
@@ -73,7 +73,7 @@ function renderGroupMembers(members) {
             <div class="member-item" style="opacity: 0.6;">
                 <div class="user-avatar-small" style="width: 32px; height: 32px; background-image: url('assets/img/${m.avatar || 'default_avatar.png'}'); background-size: cover;">
                     <div class="status-indicator" style="background-color: #949ba4; border: 2px solid var(--bg-users);"></div>
-                    ${!m.avatar || m.avatar === 'default_avatar.png' ? `<span style="display:flex; justify-content:center; align-items:center; height:100%; color:white; font-size: 12px; font-weight:bold;">${m.username[0].toUpperCase()}</span>` : ''}
+                    ${!m.avatar || m.avatar === 'default_avatar.png' ? `<svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.8; padding: 20%;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>` : ''}
                 </div>
                 <div class="message-username" style="margin-left: 8px;">${escapeHTML(m.username)}</div>
             </div>
@@ -96,9 +96,8 @@ function renderMessages(messages) {
     }
 
     messagesContainer.innerHTML = messages.map(msg => `
-        <div class="message-item">
-            <div class="message-avatar" style="background-image: url('assets/img/${msg.avatar}'); background-size: cover;">
-                ${!msg.avatar || msg.avatar === 'default_avatar.png' ? `<span style="display:flex; justify-content:center; align-items:center; height:100%; color:white; font-weight:bold;">${msg.username[0].toUpperCase()}</span>` : ''}
+            <div class="message-avatar" style="background-image: url('assets/img/${msg.avatar || 'default_avatar.png'}'); background-size: cover;">
+                ${!msg.avatar || msg.avatar === 'default_avatar.png' ? `<svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.8; padding: 20%;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>` : ''}
             </div>
             <div class="message-content-wrapper">
                 <div class="message-user-info">
@@ -418,7 +417,7 @@ function openDM(friendId, friendUsername, friendAvatar) {
         avatarEl.innerHTML = '';
     } else {
         avatarEl.style.backgroundImage = 'none';
-        avatarEl.innerHTML = `<span style="display:flex; justify-content:center; align-items:center; height:100%; color:white; font-size:12px; font-weight:bold;">${friendUsername[0].toUpperCase()}</span>`;
+        avatarEl.innerHTML = `<svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.8; padding: 20%;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
     }
     document.getElementById('dm-header-username').textContent = friendUsername;
 
@@ -607,7 +606,7 @@ function renderFriends(friends, pending, blocked = []) {
             <a href="#" class="channel-item" onclick="openDM(${f.user_id}, '${escapeHTML(f.username.replace(/'/g, "\\'"))}', '${f.avatar || 'default_avatar.png'}')">
                 <div class="user-avatar-small" style="width: 32px; height: 32px; background-image: url('assets/img/${f.avatar || 'default_avatar.png'}'); background-size: cover;">
                     <div class="status-indicator" style="background-color: ${f.status === 'online' ? '#23a55a' : '#949ba4'}"></div>
-                    ${!f.avatar || f.avatar === 'default_avatar.png' ? `<span style="display:flex; justify-content:center; align-items:center; height:100%; color:white; font-size: 12px; font-weight:bold;">${f.username[0].toUpperCase()}</span>` : ''}
+                    ${!f.avatar || f.avatar === 'default_avatar.png' ? `<svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.8; padding: 20%;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>` : ''}
                 </div>
                 <span style="margin-left: 8px;">${escapeHTML(f.username)}</span>
             </a>
@@ -639,7 +638,7 @@ if (mainSearchInput) {
                 <div class="friend-item" style="border-top: 1px solid rgba(255,255,255,0.05);">
                     <div class="friend-info">
                         <div class="user-avatar-small" style="background-image: url('assets/img/${p.avatar || 'default_avatar.png'}'); background-size: cover;">
-                            ${!p.avatar || p.avatar === 'default_avatar.png' ? `<span style="display:flex; justify-content:center; align-items:center; height:100%; color:white; font-weight:bold;">${p.username[0].toUpperCase()}</span>` : ''}
+                            ${!p.avatar || p.avatar === 'default_avatar.png' ? `<svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.8; padding: 20%;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>` : ''}
                         </div>
                         <div>
                             <div class="message-username">${escapeHTML(p.username)}</div>
@@ -658,7 +657,7 @@ if (mainSearchInput) {
                 <div class="friend-item" style="border-top: 1px solid rgba(255,255,255,0.05);">
                     <div class="friend-info">
                         <div class="user-avatar-small" style="background-image: url('assets/img/${b.avatar || 'default_avatar.png'}'); background-size: cover;">
-                            ${!b.avatar || b.avatar === 'default_avatar.png' ? `<span style="display:flex; justify-content:center; align-items:center; height:100%; color:white; font-weight:bold;">${b.username[0].toUpperCase()}</span>` : ''}
+                            ${!b.avatar || b.avatar === 'default_avatar.png' ? `<svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.8; padding: 20%;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>` : ''}
                         </div>
                         <div>
                             <div class="message-username">${escapeHTML(b.username)}</div>
@@ -678,7 +677,7 @@ if (mainSearchInput) {
                 <div class="friend-info">
                     <div class="user-avatar-small" style="background-image: url('assets/img/${f.avatar || 'default_avatar.png'}'); background-size: cover;">
                         <div class="status-indicator" style="background-color: ${f.status === 'online' ? '#23a55a' : '#949ba4'}"></div>
-                        ${!f.avatar || f.avatar === 'default_avatar.png' ? `<span style="display:flex; justify-content:center; align-items:center; height:100%; color:white; font-weight:bold;">${f.username[0].toUpperCase()}</span>` : ''}
+                        ${!f.avatar || f.avatar === 'default_avatar.png' ? `<svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.8; padding: 20%;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>` : ''}
                     </div>
                     <div>
                         <div class="message-username">${escapeHTML(f.username)}</div>
@@ -687,7 +686,7 @@ if (mainSearchInput) {
                 </div>
                 <div class="friend-actions">
                     <div class="action-btn" title="Message" onclick="openDM(${f.user_id}, '${escapeHTML(f.username.replace(/'/g, "\\'"))}', '${f.avatar || 'default_avatar.png'}')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></div>
-                    <div class="action-btn" title="More"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg></div>
+                    <div class="action-btn" title="More" onclick="showFriendContextMenu(event, ${f.id}, ${f.user_id}, '${escapeHTML(f.username.replace(/'/g, "\\'"))}', '${f.avatar || 'default_avatar.png'}')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg></div>
                 </div>
             </div>
         `).join('') : emptyMessage;
@@ -702,7 +701,7 @@ if (mainSearchInput) {
                 <div class="friend-item" style="border-top: 1px solid rgba(255,255,255,0.05);">
                     <div class="friend-info">
                         <div class="user-avatar-small" style="background-image: url('assets/img/${p.avatar || 'default_avatar.png'}'); background-size: cover;">
-                            ${!p.avatar || p.avatar === 'default_avatar.png' ? `<span style="display:flex; justify-content:center; align-items:center; height:100%; color:white; font-weight:bold;">${p.username[0].toUpperCase()}</span>` : ''}
+                            ${!p.avatar || p.avatar === 'default_avatar.png' ? `<svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.8; padding: 20%;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>` : ''}
                         </div>
                         <div>
                             <div class="message-username">${escapeHTML(p.username)}</div>
@@ -727,7 +726,7 @@ if (mainSearchInput) {
             <div class="active-card">
                 <div class="card-header">
                     <div class="card-avatar" style="background-image: url('assets/img/${of.avatar || 'default_avatar.png'}'); background-size: cover;">
-                        ${!of.avatar || of.avatar === 'default_avatar.png' ? `<span style="display:flex; justify-content:center; align-items:center; height:100%; color:white; font-size: 10px; font-weight:bold;">${of.username[0].toUpperCase()}</span>` : ''}
+                        ${!of.avatar || of.avatar === 'default_avatar.png' ? `<svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.8; padding: 20%;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>` : ''}
                     </div>
                     <div class="card-info">
                         <span class="card-user">${escapeHTML(of.username)}</span>
@@ -894,7 +893,7 @@ function populateFriendsSelection() {
         <label style="display: flex; align-items: center; gap: 10px; padding: 8px; cursor: pointer; border-radius: 4px; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
             <input type="checkbox" name="group-members" value="${f.user_id}" style="width: 18px; height: 18px; cursor: pointer;">
             <div class="user-avatar-small" style="width: 24px; height: 24px; background-image: url('assets/img/${f.avatar || 'default_avatar.png'}'); background-size: cover;">
-                ${!f.avatar || f.avatar === 'default_avatar.png' ? `<span style="display:flex; justify-content:center; align-items:center; height:100%; color:white; font-size: 10px; font-weight:bold;">${f.username[0].toUpperCase()}</span>` : ''}
+                ${!f.avatar || f.avatar === 'default_avatar.png' ? `<svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.8; padding: 20%;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>` : ''}
             </div>
             <span style="color: var(--text-normal); font-size: 14px;">${escapeHTML(f.username)}</span>
         </label>
@@ -973,7 +972,7 @@ function renderDMMessages(messages) {
     dmContainer.innerHTML = messages.map(msg => `
         <div class="message-item">
             <div class="message-avatar" style="background-image: url('assets/img/${msg.avatar || 'default_avatar.png'}'); background-size: cover;">
-                ${!msg.avatar || msg.avatar === 'default_avatar.png' ? `<span style="display:flex; justify-content:center; align-items:center; height:100%; color:white; font-weight:bold;">${msg.username[0].toUpperCase()}</span>` : ''}
+                ${!msg.avatar || msg.avatar === 'default_avatar.png' ? `<svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.8; padding: 20%;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>` : ''}
             </div>
             <div class="message-content-wrapper">
                 <div class="message-user-info">
@@ -1085,5 +1084,112 @@ if (dmSendMessageForm) {
     });
 } else {
     console.error("CRITICAL: dm-send-message-form NOT FOUND in DOM during app.js execution!");
+}
+
+// Friend Context Menu Logic
+let activeFriendshipId = null;
+let activeFriendData = null;
+const friendContextMenu = document.createElement('div');
+friendContextMenu.className = 'friend-context-menu';
+friendContextMenu.innerHTML = `
+    <div class="context-menu-item" id="ctx-open-dm">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        Message
+    </div>
+    <div class="context-menu-item danger" id="ctx-remove-friend">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+        Remove Friend
+    </div>
+`;
+document.body.appendChild(friendContextMenu);
+
+window.showFriendContextMenu = function(event, friendshipId, userId, username, avatar) {
+    event.preventDefault();
+    event.stopPropagation();
+    activeFriendshipId = friendshipId;
+    activeFriendData = { userId, username, avatar };
+    
+    // Position the menu
+    const x = event.clientX;
+    const y = event.clientY;
+    
+    // Check if it's too close to the bottom
+    const menuHeight = 100;
+    const menuWidth = 160;
+    
+    let left = x - menuWidth;
+    let top = y;
+    
+    if (left < 0) left = 0;
+    if (top + menuHeight > window.innerHeight) top = window.innerHeight - menuHeight;
+    
+    friendContextMenu.style.left = `${left}px`;
+    friendContextMenu.style.top = `${top}px`;
+    friendContextMenu.style.display = 'block';
+};
+
+window.addEventListener('click', () => {
+    friendContextMenu.style.display = 'none';
+});
+
+document.getElementById('ctx-remove-friend').onclick = async () => {
+    if (!activeFriendshipId) return;
+    if (!confirm('Are you sure you want to remove this friend?')) return;
+    
+    try {
+        const response = await fetch(`api/friends.php?action=remove`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: activeFriendshipId })
+        });
+        const data = await response.json();
+        if (data.success) {
+            fetchFriends();
+        } else {
+            alert(data.error);
+        }
+    } catch (e) { console.error(e); }
+};
+
+document.getElementById('ctx-open-dm').onclick = () => {
+    if (activeFriendData) {
+        openDM(activeFriendData.userId, activeFriendData.username, activeFriendData.avatar);
+    }
+    friendContextMenu.style.display = 'none';
+};
+
+// Group Switcher Dropdown
+const groupSwitcherHeader = document.getElementById('group-switcher-header');
+const groupSwitcherDropdown = document.getElementById('group-switcher-dropdown');
+
+if (groupSwitcherHeader && groupSwitcherDropdown) {
+    groupSwitcherHeader.addEventListener('click', function(e) {
+        // Only toggle if clicking the header itself or the toggle icon, not the dropdown contents
+        if (e.target.closest('.group-switcher-dropdown')) return;
+        
+        e.preventDefault();
+        e.stopPropagation();
+        groupSwitcherDropdown.classList.toggle('active');
+        
+        // Close other menus if any
+        if (window.friendContextMenu) {
+            window.friendContextMenu.style.display = 'none';
+        }
+    });
+
+    // Close on any click outside
+    document.addEventListener('click', function(e) {
+        if (!groupSwitcherHeader.contains(e.target)) {
+            groupSwitcherDropdown.classList.remove('active');
+        }
+    });
+}
+
+const switcherAddGroup = document.getElementById('switcher-add-group');
+if (switcherAddGroup) {
+    switcherAddGroup.addEventListener('click', (e) => {
+        e.preventDefault();
+        showGroupActionsModal();
+    });
 }
 

@@ -47,6 +47,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
     <div class="auth-container">
+        <div class="brand-wrapper">
+            <div class="brand-logo-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            </div>
+            <div class="brand-text-container">
+                <span class="brand-text">AllChat</span>
+                <span class="brand-tagline">Nexus Protocol</span>
+            </div>
+        </div>
         <h1 class="auth-title">Create an account</h1>
         <div class="auth-subtitle">Join the conversation today!</div>
         

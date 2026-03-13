@@ -70,6 +70,19 @@ try {
             } else {
                 echo json_encode(['success' => false, 'error' => 'Failed to update request']);
             }
+        } elseif ($action === 'remove') {
+            $friendship_id = (int)($data['id'] ?? 0);
+            if (!$friendship_id) {
+                echo json_encode(['success' => false, 'error' => 'ID is required']);
+                exit;
+            }
+
+            $stmt = $pdo->prepare("DELETE FROM friends WHERE id = ? AND (user_id = ? OR friend_id = ?)");
+            if ($stmt->execute([$friendship_id, $user_id, $user_id])) {
+                echo json_encode(['success' => true]);
+            } else {
+                echo json_encode(['success' => false, 'error' => 'Failed to remove friend']);
+            }
         }
     } else {
         if ($action === 'list') {
